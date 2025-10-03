@@ -1,0 +1,71 @@
+import matplotlib.pyplot as plt
+
+# Define edges
+LEFT, RIGHT, BOTTOM, TOP = 0, 1, 2, 3
+
+def is_inside(point, edge, win):
+    x, y = point
+    xmin, xmax, ymin, ymax = win
+    return (
+        (edge == LEFT and x >= xmin) or
+        (edge == RIGHT and x <= xmax) or
+        (edge == BOTTOM and y >= ymin) or
+        (edge == TOP and y <= ymax)
+    )
+
+def get_intersection(p1, p2, edge, win):
+    x1, y1 = p1
+    x2, y2 = p2
+    xmin, xmax, ymin, ymax = win
+
+    if edge == LEFT:
+        return (xmin, y1 + (y2 - y1) * (xmin - x1) / (x2 - x1))
+    elif edge == RIGHT:
+        return (xmax, y1 + (y2 - y1) * (xmax - x1) / (x2 - x1))
+    elif edge == BOTTOM:
+        return (x1 + (x2 - x1) * (ymin - y1) / (y2 - y1), ymin)
+    elif edge == TOP:
+        return (x1 + (x2 - x1) * (ymax - y1) / (y2 - y1), ymax)
+
+def sutherland_hodgman(polygon, win):
+    output_list = polygon[:]
+    for edge in [LEFT, RIGHT, BOTTOM, TOP]:
+        input_list = output_list
+        output_list = []
+        if not input_list:
+            continue
+        s = input_list[-1]
+        for p in input_list:
+            if is_inside(p, edge, win):
+                if not is_inside(s, edge, win):
+                    output_list.append(get_intersection(s, p, edge, win))
+                output_list.append(p)
+            elif is_inside(s, edge, win):
+                output_list.append(get_intersection(s, p, edge, win))
+            s = p
+    return output_list
+
+def plot_polygon(points, color, name):
+    if points:
+        x, y = zip(*(points + [points[0]]))
+        plt.plot(x, y, color=color, label=name)
+
+def plot_clip_window(win):
+    xmin, xmax, ymin, ymax = win
+    plt.plot([xmin, xmax, xmax, xmin, xmin], 
+             [ymin, ymin, ymax, ymax, ymin], 
+             'k--', label="Clipping Window")
+
+if __name__ == "__main__":
+    polygon = [(1, 2), (5, 8), (9, 5), (6, 1), (2, 0)]
+    clip_window = (2, 7, 1, 6)
+    clipped_polygon = sutherland_hodgman(polygon, clip_window)
+
+    plt.figure()
+    plot_polygon(polygon, 'b', "Original Polygon")
+    plot_polygon(clipped_polygon, 'r', "Clipped Polygon")
+    plot_clip_window(clip_window)
+
+    plt.legend()
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()
