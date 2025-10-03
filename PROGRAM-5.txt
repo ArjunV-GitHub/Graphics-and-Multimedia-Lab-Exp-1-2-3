@@ -1,0 +1,68 @@
+import matplotlib.pyplot as plt
+
+# Edges
+LEFT, RIGHT, BOTTOM, TOP = 0, 1, 2, 3
+
+def inside(point, edge, window):
+    x, y = point
+    xmin, xmax, ymin, ymax = window
+    if edge == LEFT:   return x >= xmin
+    if edge == RIGHT:  return x <= xmax
+    if edge == BOTTOM: return y >= ymin
+    if edge == TOP:    return y <= ymax
+
+def intersection(p1, p2, edge, window):
+    x1, y1 = p1
+    x2, y2 = p2
+    xmin, xmax, ymin, ymax = window
+    if edge == LEFT:
+        return (xmin, y1 + (y2 - y1) * (xmin - x1) / (x2 - x1))
+    if edge == RIGHT:
+        return (xmax, y1 + (y2 - y1) * (xmax - x1) / (x2 - x1))
+    if edge == BOTTOM:
+        return (x1 + (x2 - x1) * (ymin - y1) / (y2 - y1), ymin)
+    if edge == TOP:
+        return (x1 + (x2 - x1) * (ymax - y1) / (y2 - y1), ymax)
+
+def polygon_clip(polygon, window):
+    result = polygon[:]
+    for edge in [LEFT, RIGHT, BOTTOM, TOP]:
+        if not result:
+            break
+        temp = []
+        s = result[-1]
+        for p in result:
+            if inside(p, edge, window):
+                if not inside(s, edge, window):
+                    temp.append(intersection(s, p, edge, window))
+                temp.append(p)
+            elif inside(s, edge, window):
+                temp.append(intersection(s, p, edge, window))
+            s = p
+        result = temp
+    return result
+
+def draw_polygon(points, color, name):
+    if points:
+        xs, ys = zip(*(points + [points[0]]))
+        plt.plot(xs, ys, color=color, label=name)
+
+def draw_window(window):
+    xmin, xmax, ymin, ymax = window
+    plt.plot([xmin, xmax, xmax, xmin, xmin],
+             [ymin, ymin, ymax, ymax, ymin],
+             'k--', label="Clip Window")
+
+if __name__ == "__main__":
+    poly = [(1, 2), (5, 8), (9, 5), (6, 1), (2, 0)]
+    win = (2, 7, 1, 6)
+    clipped = polygon_clip(poly, win)
+
+    plt.figure()
+    draw_polygon(poly, 'b', "Original Polygon")
+    draw_polygon(clipped, 'r', "Clipped Polygon")
+    draw_window(win)
+
+    plt.legend()
+    plt.gca().set_aspect('equal', adjustable='box')
+    plt.show()

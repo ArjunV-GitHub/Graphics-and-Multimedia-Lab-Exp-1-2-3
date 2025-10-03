@@ -1,0 +1,43 @@
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import numpy as np
+
+# Define cube vertices
+verts = np.array([
+    [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],
+    [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]
+])
+
+# Define cube faces
+faces = [
+    [verts[i] for i in [0, 1, 2, 3]],  # Bottom
+    [verts[i] for i in [4, 5, 6, 7]],  # Top
+    [verts[i] for i in [0, 1, 5, 4]],  # Front
+    [verts[i] for i in [2, 3, 7, 6]],  # Back
+    [verts[i] for i in [1, 2, 6, 5]],  # Right
+    [verts[i] for i in [0, 3, 7, 4]]   # Left
+]
+
+# Colors for each face
+colors = ['red', 'blue', 'green', 'yellow', 'cyan', 'orange']
+
+# Create figure and axis
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+# Add cube faces
+ax.add_collection3d(Poly3DCollection(faces, facecolors=colors, edgecolors='k', linewidths=1))
+
+# Set labels and view
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_zlabel('Z')
+ax.set_title('3D Cube with Flat Shading')
+
+# Equal aspect ratio
+ax.set_box_aspect([1, 1, 1])
+ax.set_xlim(0, 1)
+ax.set_ylim(0, 1)
+ax.set_zlim(0, 1)
+
+plt.show()
